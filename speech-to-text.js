@@ -55,12 +55,15 @@ module.exports = function(RED) {
         } // GetCredentials
 
         async function Input(msg) {
-            // We should check that msg.payload is indeed a buffer
-
-            const audioBytes = msg.payload;
-            const audio = {
-                "content": audioBytes
-            };
+            let audio;
+            if (msg.payload.uri) {
+                audio = { "uri": msg.payload.uri };
+            } else if (Buffer.isBuffer(msg.payload)) {
+                audio = { "content": msg.payload };
+            } else {
+                node.error("msg.payload must be a Buffer or an object with a uri property");
+                return;
+            }
             const config = {
                 "encoding": encoding,
                 "sampleRateHertz": sampleRateHertz,
