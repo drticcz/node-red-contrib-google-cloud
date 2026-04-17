@@ -75,7 +75,13 @@ module.exports = function(RED) {
             };
             try {
                 node.status({fill: "blue", shape: "dot", text: "processing"});
-                const [response] = await speechClient.recognize(request);
+                let response;
+                if (audio.uri) {
+                    const [operation] = await speechClient.longRunningRecognize(request);
+                    [response] = await operation.promise();
+                } else {
+                    [response] = await speechClient.recognize(request);
+                }
                 node.status({});
                 msg.payload = response;
                 node.send(msg);

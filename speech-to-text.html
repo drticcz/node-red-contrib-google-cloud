@@ -87,6 +87,10 @@ limitations under the License.
         <a href="https://googleapis.dev/nodejs/speech/latest/google.cloud.speech.v1p1beta1.html#.RecognizeResponse">RecognizeResponse</a> object.
     </p>
     <p>
+        If the audio file is shorter than 1 minute, it can be supplied as a raw buffer in <msg class="payload"></msg>
+        If the audio file is longer than 1 minute, it has to be uploaded to Google Cloud Bucket and the GCS URI supplied as <msg class="payload uri"></msg>
+    </p>
+    <p>
         Processing an audio fragment takes time.  A status visualization is associated with the node which is visible when the node is processing audio.
     </p>
     <p>
