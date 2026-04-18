@@ -39,7 +39,7 @@ module.exports = function(RED) {
         let credentials = null;
 
         const projectId                           = config.projectId;
-        const location                            = config.location || "us-central1";
+        const location                            = config.location || "global";
         const model                               = config.model || "chirp";
         const languageCodes                       = config.languageCodes
             ? config.languageCodes.split(",").map(c => c.trim()).filter(Boolean)
@@ -229,12 +229,16 @@ module.exports = function(RED) {
             }
         } // Input
 
+        const apiEndpoint = location === "global"
+            ? "speech.googleapis.com"
+            : `${location}-speech.googleapis.com`;
+
         if (credentials) {
-            speechClient = new v2.SpeechClient({ credentials });
+            speechClient = new v2.SpeechClient({ credentials, apiEndpoint });
         } else if (keyFilename) {
-            speechClient = new v2.SpeechClient({ keyFilename });
+            speechClient = new v2.SpeechClient({ keyFilename, apiEndpoint });
         } else {
-            speechClient = new v2.SpeechClient({});
+            speechClient = new v2.SpeechClient({ apiEndpoint });
         }
 
         node.on("input", Input);

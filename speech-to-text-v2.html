@@ -42,7 +42,7 @@ limitations under the License.
     <!--Location-->
     <div class="form-row">
         <label for="node-input-location"><i class="fa fa-globe"></i> Location</label>
-        <input type="text" id="node-input-location" placeholder="us-central1">
+        <input type="text" id="node-input-location" placeholder="global">
     </div>
 
     <!--Recognition Model-->
@@ -163,7 +163,7 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
         keyFilename: { value: "", required: false },
         name: { value: "", required: false },
         projectId: { value: "", required: true },
-        location: { value: "us-central1", required: false },
+        location: { value: "global", required: false },
         model: { value: "chirp", required: false },
         languageCodes: { value: "en-US", required: false },
         enableWordTimeOffsets: { value: false, required: false },
