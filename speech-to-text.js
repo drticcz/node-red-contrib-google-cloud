@@ -38,10 +38,15 @@ module.exports = function(RED) {
         let speechClient = null;
         let credentials = null;
 
-        const sampleRateHertz        = config.sampleRate;
-        const encoding               = config.encoding;
-        const languageCode           = config.languageCode || "en-US";
-        const enableWordTimeOffsets  = config.enableWordTimeOffsets === true;
+        const sampleRateHertz              = config.sampleRate;
+        const encoding                     = config.encoding;
+        const languageCode                 = config.languageCode || "en-US";
+        const enableWordTimeOffsets        = config.enableWordTimeOffsets === true;
+        const model                        = config.model || "default";
+        const useEnhanced                  = config.useEnhanced === true;
+        const enableAutomaticPunctuation   = config.enableAutomaticPunctuation === true;
+        const enableSpeakerDiarization     = config.enableSpeakerDiarization === true;
+        const maxAlternatives              = config.maxAlternatives || 1;
 
         if (config.account) {
             credentials = GetCredentials(config.account);
@@ -69,7 +74,12 @@ module.exports = function(RED) {
                 "encoding": encoding,
                 "sampleRateHertz": sampleRateHertz,
                 "languageCode": languageCode,              // The currently supported languages can be found here https://cloud.google.com/speech-to-text/docs/languages
-                "enableWordTimeOffsets": enableWordTimeOffsets
+                "enableWordTimeOffsets": enableWordTimeOffsets,
+                "model": model,
+                "useEnhanced": useEnhanced,
+                "enableAutomaticPunctuation": enableAutomaticPunctuation,
+                "enableSpeakerDiarization": enableSpeakerDiarization,
+                "maxAlternatives": maxAlternatives
             };
             const request = {
                 "audio": audio,
@@ -85,16 +95,41 @@ module.exports = function(RED) {
                     [response] = await speechClient.recognize(request);
                 }
                 node.status({});
-                if (enableWordTimeOffsets) {
+                const isStructured = enableWordTimeOffsets || enableSpeakerDiarization || maxAlternatives > 1;
+                if (isStructured) {
                     msg.payload = response.results.map(result => {
-                        const alt = result.alternatives[0];
-                        return {
-                            transcript: alt.transcript,
-                            startTime: alt.words.length > 0
-                                ? Number(alt.words[0].startTime.seconds) + alt.words[0].startTime.nanos / 1e9
-                                : null,
-                            endTime: Number(result.resultEndTime.seconds) + result.resultEndTime.nanos / 1e9
+                        const bestAlt = result.alternatives[0];
+                        const chunk = {
+                            transcript: bestAlt.transcript,
+                            confidence: bestAlt.confidence
                         };
+
+                        if (enableWordTimeOffsets && result.resultEndTime) {
+                            chunk.startTime = bestAlt.words && bestAlt.words.length > 0
+                                ? Number(bestAlt.words[0].startTime.seconds) + bestAlt.words[0].startTime.nanos / 1e9
+                                : null;
+                            chunk.endTime = Number(result.resultEndTime.seconds) + result.resultEndTime.nanos / 1e9;
+                        }
+
+                        if (enableSpeakerDiarization && bestAlt.words) {
+                            chunk.words = bestAlt.words.map(w => {
+                                const wordObj = { word: w.word, speakerTag: w.speakerTag };
+                                if (enableWordTimeOffsets) {
+                                    wordObj.startTime = Number(w.startTime.seconds) + w.startTime.nanos / 1e9;
+                                    wordObj.endTime = Number(w.endTime.seconds) + w.endTime.nanos / 1e9;
+                                }
+                                return wordObj;
+                            });
+                        }
+
+                        if (maxAlternatives > 1) {
+                            chunk.alternatives = result.alternatives.map(alt => ({
+                                transcript: alt.transcript,
+                                confidence: alt.confidence
+                            }));
+                        }
+
+                        return chunk;
                     });
                 } else if (audio.uri) {
                     msg.payload = response.results

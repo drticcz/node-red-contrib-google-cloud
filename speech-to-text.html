@@ -65,6 +65,43 @@ limitations under the License.
         <input type="checkbox" id="node-input-enableWordTimeOffsets" style="width:auto">
     </div>
 
+    <!--Recognition Model-->
+    <div class="form-row">
+        <label for="node-input-model"><i class="fa fa-microphone"></i> Recognition Model</label>
+        <select id="node-input-model">
+            <option value="default">default</option>
+            <option value="phone_call">phone_call</option>
+            <option value="video">video</option>
+            <option value="command_and_search">command_and_search</option>
+            <option value="medical_dictation">medical_dictation</option>
+            <option value="medical_conversation">medical_conversation</option>
+        </select>
+    </div>
+
+    <!--Enhanced-->
+    <div class="form-row">
+        <label for="node-input-useEnhanced"><i class="fa fa-star"></i> Enhanced</label>
+        <input type="checkbox" id="node-input-useEnhanced" style="width:auto">
+    </div>
+
+    <!--Punctuation-->
+    <div class="form-row">
+        <label for="node-input-enableAutomaticPunctuation"><i class="fa fa-pencil"></i> Punctuation</label>
+        <input type="checkbox" id="node-input-enableAutomaticPunctuation" style="width:auto">
+    </div>
+
+    <!--Identify Speakers-->
+    <div class="form-row">
+        <label for="node-input-enableSpeakerDiarization"><i class="fa fa-users"></i> Identify Speakers</label>
+        <input type="checkbox" id="node-input-enableSpeakerDiarization" style="width:auto">
+    </div>
+
+    <!--Max Alternatives-->
+    <div class="form-row">
+        <label for="node-input-maxAlternatives"><i class="fa fa-list"></i> Max Alternatives</label>
+        <input type="number" min="1" max="30" id="node-input-maxAlternatives">
+    </div>
+
 </script>
 
 <script type="text/html" data-help-name="google-cloud-speech-to-text">
@@ -128,7 +165,12 @@ RED.nodes.registerType("google-cloud-speech-to-text", {
         sampleRate: { value: 16000, required: false},
         encoding: { value: "LINEAR16", required: false},
         languageCode: { value: "en-US", required: false},
-        enableWordTimeOffsets: { value: false, required: false }
+        enableWordTimeOffsets: { value: false, required: false },
+        model: { value: "default", required: false },
+        useEnhanced: { value: false, required: false },
+        enableAutomaticPunctuation: { value: false, required: false },
+        enableSpeakerDiarization: { value: false, required: false },
+        maxAlternatives: { value: 1, required: false }
     },
     inputs: 1,
     outputs: 1,
