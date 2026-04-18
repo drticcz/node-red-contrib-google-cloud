@@ -220,6 +220,7 @@ module.exports = function(RED) {
                 node.send(msg);
             } catch (exp) {
                 node.status({});
+                console.error("STT V2 error details:", JSON.stringify(exp, null, 2));
                 node.error(exp);
             }
         } // Input
