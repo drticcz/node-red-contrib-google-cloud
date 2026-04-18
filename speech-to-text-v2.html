@@ -39,12 +39,6 @@ limitations under the License.
         <input type="text" id="node-input-projectId" placeholder="your-gcp-project-id">
     </div>
 
-    <!--Location-->
-    <div class="form-row">
-        <label for="node-input-location"><i class="fa fa-globe"></i> Location</label>
-        <input type="text" id="node-input-location" placeholder="global">
-    </div>
-
     <!--Recognition Model-->
     <div class="form-row">
         <label for="node-input-model"><i class="fa fa-microphone"></i> Recognition Model</label>
@@ -54,6 +48,12 @@ limitations under the License.
             <option value="latest_long">latest_long</option>
             <option value="latest_short">latest_short</option>
         </select>
+    </div>
+
+    <!--Location-->
+    <div class="form-row">
+        <label for="node-input-location"><i class="fa fa-globe"></i> Location</label>
+        <select id="node-input-location"></select>
     </div>
 
     <!--Language Codes-->
@@ -156,6 +156,27 @@ limitations under the License.
 </script>
 
 <script type="text/javascript">
+var STT_V2_MODEL_LOCATIONS = {
+    "chirp":         ["us-central1", "europe-west4", "asia-southeast1"],
+    "chirp_2":       ["us-central1", "europe-west4", "asia-southeast1"],
+    "latest_long":   ["global", "us-central1", "us-east1", "us-west1", "eu", "europe-west1", "europe-west2", "europe-west4", "asia-east1", "asia-northeast1", "asia-south1", "asia-southeast1", "australia-southeast1"],
+    "latest_short":  ["global", "us-central1", "us-east1", "us-west1", "eu", "europe-west1", "europe-west2", "europe-west4", "asia-east1", "asia-northeast1", "asia-south1", "asia-southeast1", "australia-southeast1"]
+};
+
+function sttV2UpdateLocations(selectedModel, currentLocation) {
+    var locations = STT_V2_MODEL_LOCATIONS[selectedModel] || ["global"];
+    var $select = $("#node-input-location");
+    $select.empty();
+    locations.forEach(function(loc) {
+        $select.append($("<option>").val(loc).text(loc));
+    });
+    if (currentLocation && locations.indexOf(currentLocation) !== -1) {
+        $select.val(currentLocation);
+    } else {
+        $select.val(locations[0]);
+    }
+}
+
 RED.nodes.registerType("google-cloud-speech-to-text-v2", {
     category: "GCP",
     defaults: {
@@ -163,7 +184,7 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
         keyFilename: { value: "", required: false },
         name: { value: "", required: false },
         projectId: { value: "", required: true },
-        location: { value: "global", required: false },
+        location: { value: "us-central1", required: false },
         model: { value: "chirp", required: false },
         languageCodes: { value: "en-US", required: false },
         enableWordTimeOffsets: { value: false, required: false },
@@ -182,6 +203,13 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
     label: function () {
         return this.name || "Speech To Text V2";
     },
-    paletteLabel: "Speech To Text V2"
+    paletteLabel: "Speech To Text V2",
+    oneditprepare: function () {
+        var node = this;
+        sttV2UpdateLocations(node.model, node.location);
+        $("#node-input-model").on("change", function () {
+            sttV2UpdateLocations($(this).val(), $("#node-input-location").val());
+        });
+    }
 });
 </script>

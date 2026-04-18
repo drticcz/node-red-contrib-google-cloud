@@ -39,7 +39,7 @@ module.exports = function(RED) {
         let credentials = null;
 
         const projectId                           = config.projectId;
-        const location                            = config.location || "global";
+        const location                            = config.location || "us-central1";
         const model                               = config.model || "chirp";
         const languageCodes                       = config.languageCodes
             ? config.languageCodes.split(",").map(c => c.trim()).filter(Boolean)
