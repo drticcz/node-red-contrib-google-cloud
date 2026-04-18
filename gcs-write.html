@@ -45,6 +45,12 @@ limitations under the License.
         <input type="text" id="node-input-contentType">
     </div>
 
+    <!--Delete-->
+    <div class="form-row">
+        <label for="node-input-delete"><i class="fa fa-trash"></i> Delete</label>
+        <input type="checkbox" id="node-input-delete" style="width:auto">
+    </div>
+
 </script>
 
 <script type="text/html" data-help-name="google-cloud-gcs-write">
@@ -65,6 +71,11 @@ limitations under the License.
             <span class="property-type">string</span>
         </dt>
         <dd>[Optional] The MIME content type of the object.</dd>
+
+        <dt>msg.delete
+            <span class="property-type">boolean</span>
+        </dt>
+        <dd>[Optional] When <code>true</code>, deletes the file at <code>msg.filename</code> instead of writing. Overrides the Delete setting in node configuration. When <code>false</code>, forces write mode even if Delete is checked in the node config.</dd>
     </dl>
 
     <h3>Details</h3>
@@ -79,6 +90,11 @@ limitations under the License.
         If this is not specified but a configuration property for content type is, then THAT will be used.  If neither are supplied,
         then we don't specify a content type for the GCS file.
     </p>
+    <p>
+        To delete a file, set <code>msg.delete</code> to <code>true</code> or enable the Delete checkbox in the node configuration.
+        In delete mode, <code>msg.payload</code> is not required. The <code>msg.delete</code> property always takes precedence over
+        the node configuration setting.
+    </p>
 </script>
 
 <script type="text/javascript">
@@ -89,7 +105,8 @@ RED.nodes.registerType("google-cloud-gcs-write", {
         keyFilename: { value: "", required: false },
         filename:    { value: "", required: false },
         contentType: { value: "", required: false },
-        name:        { value: "", required: false }
+        name:        { value: "", required: false },
+        delete:      { value: false, required: false }
     },
     inputs: 1,
     outputs: 1,

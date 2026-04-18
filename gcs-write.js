@@ -52,6 +52,7 @@ module.exports = function(RED) {
         const node = this;
         const fileName_options = config.filename.trim();
         const contentType_options = config.contentType.trim();
+        const delete_options = config.delete === true;
 
         /**
          * Extract JSON service account key from "google-cloud-credentials" config node.
@@ -72,7 +73,9 @@ module.exports = function(RED) {
                 node.error(`No filename found in msg.filename and no file name configured (${fileName_options})`);
                 return;
             }
-            if (!msg.payload) {
+            const shouldDelete = msg.delete !== undefined ? msg.delete === true : delete_options;
+
+            if (!shouldDelete && !msg.payload) {
                 node.error('No data found in msg.payload');
                 return;
             }
@@ -99,6 +102,13 @@ module.exports = function(RED) {
 
             const bucket = storage.bucket(bucketName); // Get access to the bucket
             const file   = bucket.file(fileName);      // Model access to the file in the bucket
+
+            if (shouldDelete) {
+                file.delete()
+                    .then(() => { node.send(msg); })
+                    .catch((err) => { node.error(`delete error: ${err.message}`, msg); });
+                return;
+            }
 
             const writeStreamOptions = {
                 resumable: false
