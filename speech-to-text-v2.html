@@ -206,9 +206,19 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
     paletteLabel: "Speech To Text V2",
     oneditprepare: function () {
         var node = this;
-        sttV2UpdateLocations(node.model, node.location);
+
+        function updateModelDependentUI(selectedModel) {
+            sttV2UpdateLocations(selectedModel, $("#node-input-location").val());
+            var isChirp = selectedModel.startsWith("chirp");
+            $("#node-input-enableSpeakerDiarization").closest(".form-row").toggle(!isChirp);
+            if (isChirp) {
+                $("#node-input-enableSpeakerDiarization").prop("checked", false);
+            }
+        }
+
+        updateModelDependentUI(node.model);
         $("#node-input-model").on("change", function () {
-            sttV2UpdateLocations($(this).val(), $("#node-input-location").val());
+            updateModelDependentUI($(this).val());
         });
     }
 });
