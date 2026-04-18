@@ -1,0 +1,187 @@
+<!--
+Copyright 2019 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<script type="text/html" data-template-name="google-cloud-speech-to-text-v2">
+    <!--Name-->
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+
+    <!--Credentials-->
+    <div class="form-row">
+        <label for="node-input-account"><i class="fa fa-user"></i> Credentials</label>
+        <input type="text" id="node-input-account">
+    </div>
+
+    <!--Key File-->
+    <div class="form-row">
+        <label for="node-input-keyFilename"><i class="fa fa-user"></i> Key File</label>
+        <input type="text" id="node-input-keyFilename">
+    </div>
+
+    <!--Project ID-->
+    <div class="form-row">
+        <label for="node-input-projectId"><i class="fa fa-cloud"></i> Project ID</label>
+        <input type="text" id="node-input-projectId" placeholder="your-gcp-project-id">
+    </div>
+
+    <!--Location-->
+    <div class="form-row">
+        <label for="node-input-location"><i class="fa fa-globe"></i> Location</label>
+        <input type="text" id="node-input-location" placeholder="us-central1">
+    </div>
+
+    <!--Recognition Model-->
+    <div class="form-row">
+        <label for="node-input-model"><i class="fa fa-microphone"></i> Recognition Model</label>
+        <select id="node-input-model">
+            <option value="chirp">chirp</option>
+            <option value="chirp_2">chirp_2</option>
+            <option value="latest_long">latest_long</option>
+            <option value="latest_short">latest_short</option>
+        </select>
+    </div>
+
+    <!--Language Codes-->
+    <div class="form-row">
+        <label for="node-input-languageCodes"><i class="fa fa-language"></i> Language Codes</label>
+        <input type="text" id="node-input-languageCodes" placeholder="en-US,fr-FR">
+    </div>
+
+    <!--Word Timecodes-->
+    <div class="form-row">
+        <label for="node-input-enableWordTimeOffsets"><i class="fa fa-clock-o"></i> Word Timecodes</label>
+        <input type="checkbox" id="node-input-enableWordTimeOffsets" style="width:auto">
+    </div>
+
+    <!--Punctuation-->
+    <div class="form-row">
+        <label for="node-input-enableAutomaticPunctuation"><i class="fa fa-pencil"></i> Punctuation</label>
+        <input type="checkbox" id="node-input-enableAutomaticPunctuation" style="width:auto">
+    </div>
+
+    <!--Identify Speakers-->
+    <div class="form-row">
+        <label for="node-input-enableSpeakerDiarization"><i class="fa fa-users"></i> Identify Speakers</label>
+        <input type="checkbox" id="node-input-enableSpeakerDiarization" style="width:auto">
+    </div>
+
+    <!--Max Alternatives-->
+    <div class="form-row">
+        <label for="node-input-maxAlternatives"><i class="fa fa-list"></i> Max Alternatives</label>
+        <input type="number" min="1" max="30" id="node-input-maxAlternatives">
+    </div>
+
+    <!--Speech Contexts-->
+    <div class="form-row">
+        <label for="node-input-speechContexts"><i class="fa fa-comment"></i> Speech Contexts</label>
+        <input type="text" id="node-input-speechContexts" placeholder="comma-separated hint phrases">
+    </div>
+
+    <!--Audio Channel Count-->
+    <div class="form-row">
+        <label for="node-input-audioChannelCount"><i class="fa fa-volume-up"></i> Audio Channel Count</label>
+        <input type="number" min="1" max="8" id="node-input-audioChannelCount">
+    </div>
+
+    <!--Recognize Channels Separately-->
+    <div class="form-row">
+        <label for="node-input-enableSeparateRecognitionPerChannel"><i class="fa fa-sliders"></i> Recognize Channels Separately</label>
+        <input type="checkbox" id="node-input-enableSeparateRecognitionPerChannel" style="width:auto">
+    </div>
+
+</script>
+
+<script type="text/html" data-help-name="google-cloud-speech-to-text-v2">
+    <p>
+        Convert audio speech to text using the GCP Speech-to-Text V2 API with Chirp model support.
+    </p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>msg.payload <span class="property-type">Buffer</span></dt>
+        <dd>Raw audio bytes for short audio (&lt; 1 min).</dd>
+        <dt>msg.payload.uri <span class="property-type">string</span></dt>
+        <dd>GCS URI (e.g. <code>gs://bucket/audio.flac</code>) for longer audio, processed via batchRecognize.</dd>
+    </dl>
+    <h3>Msg overrides</h3>
+    <dl class="message-properties">
+        <dt>msg.speechContexts <span class="property-type">Array | string</span></dt>
+        <dd>Override speech hint phrases. Array of context objects or comma-separated string.</dd>
+        <dt>msg.alternativeLanguageCodes <span class="property-type">Array | string</span></dt>
+        <dd>Additional language codes to merge with the configured language codes.</dd>
+        <dt>msg.audioChannelCount <span class="property-type">number</span></dt>
+        <dd>Override the number of audio channels.</dd>
+        <dt>msg.enableSeparateRecognitionPerChannel <span class="property-type">boolean</span></dt>
+        <dd>Override per-channel recognition setting.</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>msg.payload <span class="property-type">string | Array</span></dt>
+        <dd>
+            Plain joined transcript string when no structured options are enabled.
+            Array of result chunks when Word Timecodes, Identify Speakers, Max Alternatives &gt; 1,
+            or Recognize Channels Separately is enabled. Each chunk contains:
+            <code>transcript</code>, <code>confidence</code>, and optionally
+            <code>startTime</code>, <code>endTime</code>, <code>channelTag</code>,
+            <code>words[]</code>, <code>alternatives[]</code>.
+        </dd>
+    </dl>
+    <h3>Details</h3>
+    <p>
+        Uses the Speech-to-Text V2 API. Short audio (buffer) is processed synchronously via <code>recognize</code>.
+        GCS URI audio is processed asynchronously via <code>batchRecognize</code> (no duration limit).
+    </p>
+    <p>
+        V2 uses automatic decoding by default (no need to specify encoding or sample rate).
+        When Audio Channel Count is set above 1, explicit decoding config is used instead.
+    </p>
+    <p>
+        Multiple language codes are supported natively — list them comma-separated in Language Codes
+        or pass additional codes via <code>msg.alternativeLanguageCodes</code>.
+    </p>
+</script>
+
+<script type="text/javascript">
+RED.nodes.registerType("google-cloud-speech-to-text-v2", {
+    category: "GCP",
+    defaults: {
+        account: { type: "google-cloud-credentials", required: false },
+        keyFilename: { value: "", required: false },
+        name: { value: "", required: false },
+        projectId: { value: "", required: true },
+        location: { value: "us-central1", required: false },
+        model: { value: "chirp", required: false },
+        languageCodes: { value: "en-US", required: false },
+        enableWordTimeOffsets: { value: false, required: false },
+        enableAutomaticPunctuation: { value: false, required: false },
+        enableSpeakerDiarization: { value: false, required: false },
+        maxAlternatives: { value: 1, required: false },
+        speechContexts: { value: "", required: false },
+        audioChannelCount: { value: 1, required: false },
+        enableSeparateRecognitionPerChannel: { value: false, required: false }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "speech-to-text.png",
+    align: "left",
+    color: "#3FADB5",
+    label: function () {
+        return this.name || "Speech To Text V2";
+    },
+    paletteLabel: "Speech To Text V2"
+});
+</script>

@@ -64,6 +64,7 @@
             "google-cloud-ce-metadata": "metadata.js",
             "google-cloud-monitoring": "monitoring.js",
             "google-cloud-speech-to-text": "speech-to-text.js",
+            "google-cloud-speech-to-text-v2": "speech-to-text-v2.js",
             "google-cloud-dlp": "dlp.js",
             "google-cloud-translate": "translate.js",
             "google-cloud-bigquery": "bigquery.js",
