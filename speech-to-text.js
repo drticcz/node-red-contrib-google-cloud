@@ -83,7 +83,13 @@ module.exports = function(RED) {
                     [response] = await speechClient.recognize(request);
                 }
                 node.status({});
-                msg.payload = response;
+                if (audio.uri) {
+                    msg.payload = response.results
+                        .map(result => result.alternatives[0].transcript)
+                        .join(" ");
+                } else {
+                    msg.payload = response;
+                }
                 node.send(msg);
             }
             catch(exp) {
