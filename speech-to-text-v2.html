@@ -58,8 +58,9 @@ limitations under the License.
 
     <!--Language Codes-->
     <div class="form-row">
-        <label for="node-input-languageCodes"><i class="fa fa-language"></i> Language Codes</label>
-        <input type="text" id="node-input-languageCodes" placeholder="en-US,fr-FR">
+        <label for="node-input-languageCodes" style="vertical-align:top; margin-top:4px"><i class="fa fa-language"></i> Language Codes</label>
+        <select id="node-input-languageCodes-select" multiple style="width:70%; height:100px;"></select>
+        <input type="hidden" id="node-input-languageCodes">
     </div>
 
     <!--Word Timecodes-->
@@ -156,6 +157,51 @@ limitations under the License.
 </script>
 
 <script type="text/javascript">
+var STT_V2_LANGUAGES = {
+    chirp: [
+        { group: "English",     codes: [["en-US","English (US)"],["en-GB","English (UK)"],["en-AU","English (Australia)"],["en-IN","English (India)"],["en-CA","English (Canada)"]] },
+        { group: "Spanish",     codes: [["es-ES","Spanish (Spain)"],["es-MX","Spanish (Mexico)"],["es-US","Spanish (US)"],["es-AR","Spanish (Argentina)"],["es-CO","Spanish (Colombia)"],["es-CL","Spanish (Chile)"]] },
+        { group: "French",      codes: [["fr-FR","French (France)"],["fr-CA","French (Canada)"],["fr-BE","French (Belgium)"],["fr-CH","French (Switzerland)"]] },
+        { group: "German",      codes: [["de-DE","German (Germany)"],["de-AT","German (Austria)"],["de-CH","German (Switzerland)"]] },
+        { group: "Portuguese",  codes: [["pt-BR","Portuguese (Brazil)"],["pt-PT","Portuguese (Portugal)"]] },
+        { group: "Chinese",     codes: [["cmn-Hans-CN","Chinese Mandarin (Simplified)"],["cmn-Hant-TW","Chinese Mandarin (Traditional)"],["yue-Hant-HK","Chinese Cantonese (HK)"]] },
+        { group: "Asian",       codes: [["ja-JP","Japanese"],["ko-KR","Korean"],["vi-VN","Vietnamese"],["th-TH","Thai"],["id-ID","Indonesian"],["ms-MY","Malay"],["fil-PH","Filipino"],["km-KH","Khmer"],["lo-LA","Lao"],["my-MM","Burmese"],["mn-MN","Mongolian"]] },
+        { group: "South Asian", codes: [["hi-IN","Hindi"],["bn-IN","Bengali (India)"],["bn-BD","Bengali (Bangladesh)"],["gu-IN","Gujarati"],["kn-IN","Kannada"],["ml-IN","Malayalam"],["mr-IN","Marathi"],["ne-NP","Nepali"],["pa-Guru-IN","Punjabi"],["si-LK","Sinhala"],["ta-IN","Tamil (India)"],["ta-LK","Tamil (Sri Lanka)"],["te-IN","Telugu"],["ur-IN","Urdu (India)"],["ur-PK","Urdu (Pakistan)"]] },
+        { group: "Arabic",      codes: [["ar-SA","Arabic (Saudi Arabia)"],["ar-EG","Arabic (Egypt)"],["ar-AE","Arabic (UAE)"],["ar-MA","Arabic (Morocco)"],["ar-IQ","Arabic (Iraq)"]] },
+        { group: "European",    codes: [["it-IT","Italian"],["nl-NL","Dutch (Netherlands)"],["nl-BE","Dutch (Belgium)"],["pl-PL","Polish"],["ru-RU","Russian"],["tr-TR","Turkish"],["sv-SE","Swedish"],["da-DK","Danish"],["fi-FI","Finnish"],["nb-NO","Norwegian"],["cs-CZ","Czech"],["sk-SK","Slovak"],["hu-HU","Hungarian"],["ro-RO","Romanian"],["bg-BG","Bulgarian"],["hr-HR","Croatian"],["sr-RS","Serbian"],["uk-UA","Ukrainian"],["el-GR","Greek"],["ca-ES","Catalan"],["gl-ES","Galician"],["eu-ES","Basque"],["is-IS","Icelandic"],["lv-LV","Latvian"],["lt-LT","Lithuanian"],["et-EE","Estonian"],["sl-SI","Slovenian"],["mk-MK","Macedonian"],["bs-BA","Bosnian"],["cy-GB","Welsh"]] },
+        { group: "Other",       codes: [["af-ZA","Afrikaans"],["sq-AL","Albanian"],["am-ET","Amharic"],["hy-AM","Armenian"],["az-AZ","Azerbaijani"],["be-BY","Belarusian"],["fa-IR","Persian"],["ka-GE","Georgian"],["iw-IL","Hebrew"],["kk-KZ","Kazakh"],["ps-AF","Pashto"],["sw-KE","Swahili (Kenya)"],["sw-TZ","Swahili (Tanzania)"],["uz-UZ","Uzbek"],["zu-ZA","Zulu"],["as-IN","Assamese"]] }
+    ],
+    standard: [
+        { group: "English",     codes: [["en-US","English (US)"],["en-GB","English (UK)"],["en-AU","English (Australia)"],["en-IN","English (India)"],["en-CA","English (Canada)"]] },
+        { group: "Spanish",     codes: [["es-ES","Spanish (Spain)"],["es-MX","Spanish (Mexico)"],["es-US","Spanish (US)"],["es-AR","Spanish (Argentina)"],["es-CO","Spanish (Colombia)"]] },
+        { group: "French",      codes: [["fr-FR","French (France)"],["fr-CA","French (Canada)"]] },
+        { group: "German",      codes: [["de-DE","German (Germany)"],["de-AT","German (Austria)"],["de-CH","German (Switzerland)"]] },
+        { group: "Portuguese",  codes: [["pt-BR","Portuguese (Brazil)"],["pt-PT","Portuguese (Portugal)"]] },
+        { group: "Chinese",     codes: [["cmn-Hans-CN","Chinese Mandarin (Simplified)"],["cmn-Hant-TW","Chinese Mandarin (Traditional)"],["yue-Hant-HK","Chinese Cantonese (HK)"]] },
+        { group: "Asian",       codes: [["ja-JP","Japanese"],["ko-KR","Korean"],["vi-VN","Vietnamese"],["th-TH","Thai"],["id-ID","Indonesian"],["ms-MY","Malay"],["fil-PH","Filipino"]] },
+        { group: "South Asian", codes: [["hi-IN","Hindi"],["bn-IN","Bengali"],["gu-IN","Gujarati"],["kn-IN","Kannada"],["ml-IN","Malayalam"],["mr-IN","Marathi"],["ta-IN","Tamil"],["te-IN","Telugu"],["ur-IN","Urdu"]] },
+        { group: "Arabic",      codes: [["ar-SA","Arabic (Saudi Arabia)"],["ar-EG","Arabic (Egypt)"],["ar-AE","Arabic (UAE)"]] },
+        { group: "European",    codes: [["it-IT","Italian"],["nl-NL","Dutch"],["pl-PL","Polish"],["ru-RU","Russian"],["tr-TR","Turkish"],["sv-SE","Swedish"],["da-DK","Danish"],["fi-FI","Finnish"],["cs-CZ","Czech"],["hu-HU","Hungarian"],["ro-RO","Romanian"],["el-GR","Greek"],["uk-UA","Ukrainian"],["iw-IL","Hebrew"],["nb-NO","Norwegian"],["sk-SK","Slovak"],["bg-BG","Bulgarian"],["hr-HR","Croatian"],["ca-ES","Catalan"],["eu-ES","Basque"]] },
+        { group: "Other",       codes: [["af-ZA","Afrikaans"],["fa-IR","Persian"],["sw-KE","Swahili"],["zu-ZA","Zulu"]] }
+    ]
+};
+
+function sttV2UpdateLanguages(selectedModel, currentCodes) {
+    var langList = selectedModel.startsWith("chirp") ? STT_V2_LANGUAGES.chirp : STT_V2_LANGUAGES.standard;
+    var selected = currentCodes ? currentCodes.split(",").map(function(c) { return c.trim(); }) : ["en-US"];
+    var $select = $("#node-input-languageCodes-select");
+    $select.empty();
+    langList.forEach(function(group) {
+        var $group = $("<optgroup>").attr("label", group.group);
+        group.codes.forEach(function(c) {
+            var $opt = $("<option>").val(c[0]).text(c[0] + " — " + c[1]);
+            if (selected.indexOf(c[0]) !== -1) $opt.prop("selected", true);
+            $group.append($opt);
+        });
+        $select.append($group);
+    });
+}
+
 var STT_V2_MODEL_LOCATIONS = {
     "chirp":         ["us-central1", "europe-west4", "asia-southeast1"],
     "chirp_2":       ["us-central1", "europe-west4", "asia-southeast1"],
@@ -209,6 +255,7 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
 
         function updateModelDependentUI(selectedModel) {
             sttV2UpdateLocations(selectedModel, $("#node-input-location").val());
+            sttV2UpdateLanguages(selectedModel, $("#node-input-languageCodes").val());
             var isChirp = selectedModel.startsWith("chirp");
             $("#node-input-enableSpeakerDiarization").closest(".form-row").toggle(!isChirp);
             if (isChirp) {
@@ -220,6 +267,10 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
         $("#node-input-model").on("change", function () {
             updateModelDependentUI($(this).val());
         });
+    },
+    oneditsave: function () {
+        var selected = $("#node-input-languageCodes-select").val() || [];
+        $("#node-input-languageCodes").val(selected.join(","));
     }
 });
 </script>
