@@ -74,17 +74,9 @@ module.exports = function(RED) {
         }
 
         function buildRecognitionConfig(effectiveLanguageCodes, effectiveAudioChannelCount, effectiveEnableSeparateRecognitionPerChannel, effectiveSpeechContexts) {
-            const features = {};
-            if (enableWordTimeOffsets)      features.enableWordTimeOffsets      = true;
-            if (enableAutomaticPunctuation) features.enableAutomaticPunctuation = true;
-            if (maxAlternatives > 1)        features.maxAlternatives            = maxAlternatives;
-            if (effectiveEnableSeparateRecognitionPerChannel) features.multiChannelMode = "SEPARATE_RECOGNITION_PER_CHANNEL";
-            if (enableSpeakerDiarization)   features.diarizationConfig          = { enableSpeakerDiarization: true };
-
             const recognitionConfig = {
                 languageCodes: effectiveLanguageCodes,
-                model: model,
-                features: features
+                model: model
             };
 
             if (effectiveAudioChannelCount > 1) {
@@ -94,6 +86,14 @@ module.exports = function(RED) {
             } else {
                 recognitionConfig.autoDecodingConfig = {};
             }
+
+            const features = {};
+            if (enableWordTimeOffsets)                        features.enableWordTimeOffsets      = true;
+            if (enableAutomaticPunctuation)                   features.enableAutomaticPunctuation = true;
+            if (maxAlternatives > 1)                          features.maxAlternatives            = maxAlternatives;
+            if (effectiveEnableSeparateRecognitionPerChannel) features.multiChannelMode           = "SEPARATE_RECOGNITION_PER_CHANNEL";
+            if (enableSpeakerDiarization)                     features.diarizationConfig          = { enableSpeakerDiarization: true };
+            if (Object.keys(features).length > 0)            recognitionConfig.features          = features;
 
             if (effectiveSpeechContexts.length > 0) {
                 recognitionConfig.adaptation = {
@@ -107,10 +107,11 @@ module.exports = function(RED) {
         }
 
         function buildConfigMask(recognitionConfig) {
-            const paths = ["model", "language_codes", "features"];
-            if (recognitionConfig.autoDecodingConfig) paths.push("auto_decoding_config");
+            const paths = ["model", "language_codes"];
+            if (recognitionConfig.autoDecodingConfig)    paths.push("auto_decoding_config");
             if (recognitionConfig.explicitDecodingConfig) paths.push("explicit_decoding_config");
-            if (recognitionConfig.adaptation) paths.push("adaptation");
+            if (recognitionConfig.features)              paths.push("features");
+            if (recognitionConfig.adaptation)            paths.push("adaptation");
             return { paths };
         }
 
