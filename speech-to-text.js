@@ -38,15 +38,23 @@ module.exports = function(RED) {
         let speechClient = null;
         let credentials = null;
 
-        const sampleRateHertz              = config.sampleRate;
-        const encoding                     = config.encoding;
-        const languageCode                 = config.languageCode || "en-US";
-        const enableWordTimeOffsets        = config.enableWordTimeOffsets === true;
-        const model                        = config.model || "default";
-        const useEnhanced                  = config.useEnhanced === true;
-        const enableAutomaticPunctuation   = config.enableAutomaticPunctuation === true;
-        const enableSpeakerDiarization     = config.enableSpeakerDiarization === true;
-        const maxAlternatives              = config.maxAlternatives || 1;
+        const sampleRateHertz                     = config.sampleRate;
+        const encoding                            = config.encoding;
+        const languageCode                        = config.languageCode || "en-US";
+        const enableWordTimeOffsets               = config.enableWordTimeOffsets === true;
+        const model                               = config.model || "default";
+        const useEnhanced                         = config.useEnhanced === true;
+        const enableAutomaticPunctuation          = config.enableAutomaticPunctuation === true;
+        const enableSpeakerDiarization            = config.enableSpeakerDiarization === true;
+        const maxAlternatives                     = config.maxAlternatives || 1;
+        const speechContexts                      = config.speechContexts
+            ? [{ phrases: config.speechContexts.split(",").map(p => p.trim()).filter(Boolean) }]
+            : [];
+        const alternativeLanguageCodes            = config.alternativeLanguageCodes
+            ? config.alternativeLanguageCodes.split(",").map(c => c.trim()).filter(Boolean)
+            : [];
+        const audioChannelCount                   = config.audioChannelCount || 1;
+        const enableSeparateRecognitionPerChannel = config.enableSeparateRecognitionPerChannel === true;
 
         if (config.account) {
             credentials = GetCredentials(config.account);
@@ -60,6 +68,16 @@ module.exports = function(RED) {
             return JSON.parse(RED.nodes.getCredentials(node).account);
         } // GetCredentials
 
+        function parseSpeechContexts(value) {
+            if (Array.isArray(value)) return value;
+            return [{ phrases: String(value).split(",").map(p => p.trim()).filter(Boolean) }];
+        }
+
+        function parseLanguageCodes(value) {
+            if (Array.isArray(value)) return value;
+            return String(value).split(",").map(c => c.trim()).filter(Boolean);
+        }
+
         async function Input(msg) {
             let audio;
             if (msg.payload.uri) {
@@ -70,6 +88,12 @@ module.exports = function(RED) {
                 node.error("msg.payload must be a Buffer or an object with a uri property");
                 return;
             }
+
+            const effectiveSpeechContexts                      = msg.speechContexts !== undefined               ? parseSpeechContexts(msg.speechContexts)   : speechContexts;
+            const effectiveAlternativeLanguageCodes            = msg.alternativeLanguageCodes !== undefined     ? parseLanguageCodes(msg.alternativeLanguageCodes) : alternativeLanguageCodes;
+            const effectiveAudioChannelCount                   = msg.audioChannelCount !== undefined            ? msg.audioChannelCount                      : audioChannelCount;
+            const effectiveEnableSeparateRecognitionPerChannel = msg.enableSeparateRecognitionPerChannel !== undefined ? msg.enableSeparateRecognitionPerChannel : enableSeparateRecognitionPerChannel;
+
             const config = {
                 "encoding": encoding,
                 "sampleRateHertz": sampleRateHertz,
@@ -79,7 +103,11 @@ module.exports = function(RED) {
                 "useEnhanced": useEnhanced,
                 "enableAutomaticPunctuation": enableAutomaticPunctuation,
                 "enableSpeakerDiarization": enableSpeakerDiarization,
-                "maxAlternatives": maxAlternatives
+                "maxAlternatives": maxAlternatives,
+                "speechContexts": effectiveSpeechContexts,
+                "alternativeLanguageCodes": effectiveAlternativeLanguageCodes,
+                "audioChannelCount": effectiveAudioChannelCount,
+                "enableSeparateRecognitionPerChannel": effectiveEnableSeparateRecognitionPerChannel
             };
             const request = {
                 "audio": audio,
@@ -95,7 +123,7 @@ module.exports = function(RED) {
                     [response] = await speechClient.recognize(request);
                 }
                 node.status({});
-                const isStructured = enableWordTimeOffsets || enableSpeakerDiarization || maxAlternatives > 1;
+                const isStructured = enableWordTimeOffsets || enableSpeakerDiarization || maxAlternatives > 1 || effectiveEnableSeparateRecognitionPerChannel;
                 if (isStructured) {
                     msg.payload = response.results.map(result => {
                         const bestAlt = result.alternatives[0];
@@ -103,6 +131,10 @@ module.exports = function(RED) {
                             transcript: bestAlt.transcript,
                             confidence: bestAlt.confidence
                         };
+
+                        if (effectiveEnableSeparateRecognitionPerChannel && result.channelTag != null) {
+                            chunk.channelTag = result.channelTag;
+                        }
 
                         if (enableWordTimeOffsets && result.resultEndTime) {
                             chunk.startTime = bestAlt.words && bestAlt.words.length > 0

@@ -102,6 +102,30 @@ limitations under the License.
         <input type="number" min="1" max="30" id="node-input-maxAlternatives">
     </div>
 
+    <!--Speech Contexts-->
+    <div class="form-row">
+        <label for="node-input-speechContexts"><i class="fa fa-comment"></i> Speech Contexts</label>
+        <input type="text" id="node-input-speechContexts" placeholder="comma-separated hint phrases">
+    </div>
+
+    <!--Alternative Language Codes-->
+    <div class="form-row">
+        <label for="node-input-alternativeLanguageCodes"><i class="fa fa-language"></i> Alternative Language Codes</label>
+        <input type="text" id="node-input-alternativeLanguageCodes" placeholder="e.g. fr-FR,de-DE">
+    </div>
+
+    <!--Audio Channel Count-->
+    <div class="form-row">
+        <label for="node-input-audioChannelCount"><i class="fa fa-volume-up"></i> Audio Channel Count</label>
+        <input type="number" min="1" max="8" id="node-input-audioChannelCount">
+    </div>
+
+    <!--Recognize Channels Separately-->
+    <div class="form-row">
+        <label for="node-input-enableSeparateRecognitionPerChannel"><i class="fa fa-sliders"></i> Recognize Channels Separately</label>
+        <input type="checkbox" id="node-input-enableSeparateRecognitionPerChannel" style="width:auto">
+    </div>
+
 </script>
 
 <script type="text/html" data-help-name="google-cloud-speech-to-text">
@@ -170,7 +194,11 @@ RED.nodes.registerType("google-cloud-speech-to-text", {
         useEnhanced: { value: false, required: false },
         enableAutomaticPunctuation: { value: false, required: false },
         enableSpeakerDiarization: { value: false, required: false },
-        maxAlternatives: { value: 1, required: false }
+        maxAlternatives: { value: 1, required: false },
+        speechContexts: { value: "", required: false },
+        alternativeLanguageCodes: { value: "", required: false },
+        audioChannelCount: { value: 1, required: false },
+        enableSeparateRecognitionPerChannel: { value: false, required: false }
     },
     inputs: 1,
     outputs: 1,
