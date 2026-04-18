@@ -38,9 +38,10 @@ module.exports = function(RED) {
         let speechClient = null;
         let credentials = null;
 
-        const sampleRateHertz = config.sampleRate;
-        const encoding        = config.encoding;
-        const languageCode    = config.languageCode || "en-US";
+        const sampleRateHertz        = config.sampleRate;
+        const encoding               = config.encoding;
+        const languageCode           = config.languageCode || "en-US";
+        const enableWordTimeOffsets  = config.enableWordTimeOffsets === true;
 
         if (config.account) {
             credentials = GetCredentials(config.account);
@@ -67,7 +68,8 @@ module.exports = function(RED) {
             const config = {
                 "encoding": encoding,
                 "sampleRateHertz": sampleRateHertz,
-                "languageCode": languageCode               // The currently supported languages can be found here https://cloud.google.com/speech-to-text/docs/languages
+                "languageCode": languageCode,              // The currently supported languages can be found here https://cloud.google.com/speech-to-text/docs/languages
+                "enableWordTimeOffsets": enableWordTimeOffsets
             };
             const request = {
                 "audio": audio,
@@ -83,7 +85,18 @@ module.exports = function(RED) {
                     [response] = await speechClient.recognize(request);
                 }
                 node.status({});
-                if (audio.uri) {
+                if (enableWordTimeOffsets) {
+                    msg.payload = response.results.map(result => {
+                        const alt = result.alternatives[0];
+                        return {
+                            transcript: alt.transcript,
+                            startTime: alt.words.length > 0
+                                ? Number(alt.words[0].startTime.seconds) + alt.words[0].startTime.nanos / 1e9
+                                : null,
+                            endTime: Number(result.resultEndTime.seconds) + result.resultEndTime.nanos / 1e9
+                        };
+                    });
+                } else if (audio.uri) {
                     msg.payload = response.results
                         .map(result => result.alternatives[0].transcript)
                         .join(" ");
