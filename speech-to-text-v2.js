@@ -74,24 +74,18 @@ module.exports = function(RED) {
         }
 
         function buildRecognitionConfig(effectiveLanguageCodes, effectiveAudioChannelCount, effectiveEnableSeparateRecognitionPerChannel, effectiveSpeechContexts) {
+            const features = {};
+            if (enableWordTimeOffsets)      features.enableWordTimeOffsets      = true;
+            if (enableAutomaticPunctuation) features.enableAutomaticPunctuation = true;
+            if (maxAlternatives > 1)        features.maxAlternatives            = maxAlternatives;
+            if (effectiveEnableSeparateRecognitionPerChannel) features.multiChannelMode = "SEPARATE_RECOGNITION_PER_CHANNEL";
+            if (enableSpeakerDiarization)   features.diarizationConfig          = { enableSpeakerDiarization: true };
+
             const recognitionConfig = {
                 languageCodes: effectiveLanguageCodes,
                 model: model,
-                features: {
-                    enableWordTimeOffsets: enableWordTimeOffsets,
-                    enableAutomaticPunctuation: enableAutomaticPunctuation,
-                    maxAlternatives: maxAlternatives,
-                    multiChannelMode: effectiveEnableSeparateRecognitionPerChannel
-                        ? "SEPARATE_RECOGNITION_PER_CHANNEL"
-                        : "MULTI_CHANNEL_MODE_UNSPECIFIED"
-                }
+                features: features
             };
-
-            if (enableSpeakerDiarization) {
-                recognitionConfig.features.diarizationConfig = {
-                    enableSpeakerDiarization: true
-                };
-            }
 
             if (effectiveAudioChannelCount > 1) {
                 recognitionConfig.explicitDecodingConfig = {
