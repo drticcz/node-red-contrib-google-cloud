@@ -194,18 +194,26 @@ module.exports = function(RED) {
                 node.status({ fill: "blue", shape: "dot", text: "processing" });
                 let results;
 
-                const request = {
-                    recognizer: recognizerPath,
-                    config: recognitionConfig,
-                    configMask: configMask
-                };
                 if (audio.uri) {
-                    request.uri = audio.uri;
+                    const [operation] = await speechClient.batchRecognize({
+                        recognizer: recognizerPath,
+                        config: recognitionConfig,
+                        configMask: configMask,
+                        files: [{ uri: audio.uri }],
+                        recognitionOutputConfig: { inlineResponseConfig: {} }
+                    });
+                    const [response] = await operation.promise();
+                    const fileResult = response.results && response.results[audio.uri];
+                    results = (fileResult && fileResult.transcript && fileResult.transcript.results) || [];
                 } else {
-                    request.content = audio.content;
+                    const [response] = await speechClient.recognize({
+                        recognizer: recognizerPath,
+                        config: recognitionConfig,
+                        configMask: configMask,
+                        content: audio.content
+                    });
+                    results = response.results || [];
                 }
-                const [response] = await speechClient.recognize(request);
-                results = response.results || [];
 
                 node.status({});
                 msg.payload = formatResults(results, effectiveEnableSeparateRecognitionPerChannel);
