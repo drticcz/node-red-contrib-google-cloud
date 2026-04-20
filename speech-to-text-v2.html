@@ -114,45 +114,55 @@ limitations under the License.
     <h3>Inputs</h3>
     <dl class="message-properties">
         <dt>msg.payload <span class="property-type">Buffer</span></dt>
-        <dd>Raw audio bytes for short audio (&lt; 1 min).</dd>
+        <dd>Raw audio bytes for short audio (&lt; 1 min), processed synchronously via <code>recognize</code>.</dd>
         <dt>msg.payload.uri <span class="property-type">string</span></dt>
-        <dd>GCS URI (e.g. <code>gs://bucket/audio.flac</code>) for longer audio, processed via batchRecognize.</dd>
+        <dd>GCS URI (e.g. <code>gs://bucket/audio.flac</code>) for audio of any duration, processed asynchronously via <code>batchRecognize</code> with no duration limit.</dd>
     </dl>
     <h3>Msg overrides</h3>
     <dl class="message-properties">
         <dt>msg.speechContexts <span class="property-type">Array | string</span></dt>
-        <dd>Override speech hint phrases. Array of context objects or comma-separated string.</dd>
+        <dd>Override speech hint phrases. Accepts the full API array format or a comma-separated string of phrases.</dd>
         <dt>msg.alternativeLanguageCodes <span class="property-type">Array | string</span></dt>
-        <dd>Additional language codes to merge with the configured language codes.</dd>
+        <dd>Additional language codes to merge with the language codes selected in the node config. Accepts an array or comma-separated string.</dd>
         <dt>msg.audioChannelCount <span class="property-type">number</span></dt>
-        <dd>Override the number of audio channels.</dd>
+        <dd>Override the number of audio channels. Values above 1 switch from auto-decoding to explicit decoding config.</dd>
         <dt>msg.enableSeparateRecognitionPerChannel <span class="property-type">boolean</span></dt>
         <dd>Override per-channel recognition setting.</dd>
     </dl>
     <h3>Outputs</h3>
     <dl class="message-properties">
-        <dt>msg.payload <span class="property-type">string | Array</span></dt>
+        <dt>msg.payload <span class="property-type">string</span></dt>
+        <dd>Plain joined transcript string when no structured options are enabled.</dd>
+        <dt>msg.payload <span class="property-type">Array</span></dt>
         <dd>
-            Plain joined transcript string when no structured options are enabled.
             Array of result chunks when Word Timecodes, Identify Speakers, Max Alternatives &gt; 1,
             or Recognize Channels Separately is enabled. Each chunk contains:
-            <code>transcript</code>, <code>confidence</code>, and optionally
-            <code>startTime</code>, <code>endTime</code>, <code>channelTag</code>,
-            <code>words[]</code>, <code>alternatives[]</code>.
+            <ul>
+                <li><code>transcript</code> — recognised text</li>
+                <li><code>confidence</code> — recognition confidence (0–1)</li>
+                <li><code>startTime</code>, <code>endTime</code> — seconds (Word Timecodes only)</li>
+                <li><code>channelTag</code> — channel number, 1-based (Recognize Channels Separately only)</li>
+                <li><code>words[]</code> — word-level detail (Identify Speakers only): <code>word</code>, <code>speakerTag</code>, and optionally <code>startTime</code>, <code>endTime</code> when Word Timecodes is also enabled</li>
+                <li><code>alternatives[]</code> — additional hypotheses with <code>transcript</code> and <code>confidence</code> (Max Alternatives &gt; 1 only)</li>
+            </ul>
         </dd>
     </dl>
-    <h3>Details</h3>
+    <h3>Configuration</h3>
     <p>
-        Uses the Speech-to-Text V2 API. Short audio (buffer) is processed synchronously via <code>recognize</code>.
-        GCS URI audio is processed asynchronously via <code>batchRecognize</code> (no duration limit).
+        <b>Recognition Model</b> determines which locations are available. <code>chirp</code> and <code>chirp_2</code>
+        are available in <code>us-central1</code>, <code>europe-west4</code>, and <code>asia-southeast1</code> only.
+        <code>latest_long</code> and <code>latest_short</code> are available in all regions including <code>global</code>.
     </p>
     <p>
-        V2 uses automatic decoding by default (no need to specify encoding or sample rate).
-        When Audio Channel Count is set above 1, explicit decoding config is used instead.
+        <b>Language Codes</b> is a multi-select list. Hold Ctrl/Cmd to select multiple languages.
+        Additional languages can also be added per message via <code>msg.alternativeLanguageCodes</code>.
     </p>
     <p>
-        Multiple language codes are supported natively — list them comma-separated in Language Codes
-        or pass additional codes via <code>msg.alternativeLanguageCodes</code>.
+        <b>Audio decoding</b> is automatic by default (no encoding or sample rate needed).
+        Setting Audio Channel Count above 1 switches to explicit decoding config.
+    </p>
+    <p>
+        <b>Identify Speakers</b> is not available for <code>chirp</code> or <code>chirp_2</code> models and is hidden when either is selected.
     </p>
 </script>
 
