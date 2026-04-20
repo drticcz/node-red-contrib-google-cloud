@@ -144,12 +144,15 @@ module.exports = function(RED) {
                     chunk.endTime = durationToSeconds(result.resultEndOffset);
                 }
 
-                if (enableSpeakerDiarization && bestAlt.words) {
+                if ((enableWordTimeOffsets || enableSpeakerDiarization) && bestAlt.words) {
                     chunk.words = bestAlt.words.map(w => {
-                        const wordObj = { word: w.word, speakerTag: w.speakerTag };
+                        const wordObj = { word: w.word };
                         if (enableWordTimeOffsets) {
                             wordObj.startTime = durationToSeconds(w.startOffset);
                             wordObj.endTime = durationToSeconds(w.endOffset);
+                        }
+                        if (enableSpeakerDiarization) {
+                            wordObj.speakerTag = w.speakerTag;
                         }
                         return wordObj;
                     });
