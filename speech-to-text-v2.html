@@ -59,7 +59,12 @@ limitations under the License.
     <!--Language Codes-->
     <div class="form-row">
         <label for="node-input-languageCodes" style="vertical-align:top; margin-top:4px"><i class="fa fa-language"></i> Language Codes</label>
-        <select id="node-input-languageCodes-select" multiple style="width:70%; height:100px;"></select>
+        <div style="display:inline-block; width:70%">
+            <select id="node-input-languageCodes-select" multiple style="width:100%; height:100px;"></select>
+            <div id="node-input-languageCodes-hint" style="display:none; font-size:0.85em; color:#888; margin-top:3px">
+                Leave empty to let chirp_2 auto-detect the language.
+            </div>
+        </div>
         <input type="hidden" id="node-input-languageCodes">
     </div>
 
@@ -155,6 +160,8 @@ limitations under the License.
     </p>
     <p>
         <b>Language Codes</b> is a multi-select list. Hold Ctrl/Cmd to select multiple languages.
+        When using <code>chirp_2</code>, leaving the list empty enables automatic language detection.
+        For mixed-language audio (code-switching), select all languages that may appear — <code>chirp</code> and <code>chirp_2</code> detect language switches per word automatically with no extra configuration.
         Additional languages can also be added per message via <code>msg.alternativeLanguageCodes</code>.
     </p>
     <p>
@@ -271,6 +278,7 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
             if (isChirp) {
                 $("#node-input-enableSpeakerDiarization").prop("checked", false);
             }
+            $("#node-input-languageCodes-hint").toggle(selectedModel === "chirp_2");
         }
 
         updateModelDependentUI(node.model);
