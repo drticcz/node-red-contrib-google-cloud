@@ -145,9 +145,17 @@ limitations under the License.
             <ul>
                 <li><code>transcript</code> — recognised text</li>
                 <li><code>confidence</code> — recognition confidence (0–1)</li>
+                <li><code>languageCode</code> — BCP-47 language tag detected for this segment (e.g. <code>en-US</code>, <code>hi-IN</code>)</li>
                 <li><code>startTime</code>, <code>endTime</code> — seconds (Word Timecodes only)</li>
                 <li><code>channelTag</code> — channel number, 1-based (Recognize Channels Separately only)</li>
-                <li><code>words[]</code> — word-level detail (Identify Speakers only): <code>word</code>, <code>speakerTag</code>, and optionally <code>startTime</code>, <code>endTime</code> when Word Timecodes is also enabled</li>
+                <li><code>words[]</code> — present when Word Timecodes or Identify Speakers is enabled. Each entry contains:
+                    <ul>
+                        <li><code>word</code> — the recognised word</li>
+                        <li><code>confidence</code> — word-level confidence (0–1, when available)</li>
+                        <li><code>startTime</code>, <code>endTime</code> — seconds offset from audio start (Word Timecodes only)</li>
+                        <li><code>speakerLabel</code> — string identifier for the speaker (Identify Speakers only)</li>
+                    </ul>
+                </li>
                 <li><code>alternatives[]</code> — additional hypotheses with <code>transcript</code> and <code>confidence</code> (Max Alternatives &gt; 1 only)</li>
             </ul>
         </dd>
@@ -169,7 +177,11 @@ limitations under the License.
         Setting Audio Channel Count above 1 switches to explicit decoding config.
     </p>
     <p>
-        <b>Identify Speakers</b> is not available for <code>chirp</code> or <code>chirp_2</code> models and is hidden when either is selected.
+        <b>Model limitations</b> — the following options are only available for <code>latest_long</code> and <code>latest_short</code>:
+        <ul>
+            <li><b>Identify Speakers</b> — not supported by <code>chirp</code> or <code>chirp_2</code>; the option is hidden when either is selected.</li>
+            <li><b>Speech Contexts</b> (hint phrases) — not supported by <code>chirp</code> or <code>chirp_2</code>.</li>
+        </ul>
     </p>
 </script>
 

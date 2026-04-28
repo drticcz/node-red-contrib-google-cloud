@@ -136,6 +136,10 @@ module.exports = function(RED) {
                     confidence: bestAlt.confidence
                 };
 
+                if (result.languageCode) {
+                    chunk.languageCode = result.languageCode;
+                }
+
                 if (effectiveEnableSeparateRecognitionPerChannel && result.channelTag != null) {
                     chunk.channelTag = result.channelTag;
                 }
@@ -150,12 +154,15 @@ module.exports = function(RED) {
                 if ((enableWordTimeOffsets || enableSpeakerDiarization) && bestAlt.words) {
                     chunk.words = bestAlt.words.map(w => {
                         const wordObj = { word: w.word };
+                        if (w.confidence != null) {
+                            wordObj.confidence = w.confidence;
+                        }
                         if (enableWordTimeOffsets) {
                             wordObj.startTime = durationToSeconds(w.startOffset);
                             wordObj.endTime = durationToSeconds(w.endOffset);
                         }
                         if (enableSpeakerDiarization) {
-                            wordObj.speakerTag = w.speakerTag;
+                            wordObj.speakerLabel = w.speakerLabel;
                         }
                         return wordObj;
                     });
