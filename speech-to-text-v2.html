@@ -282,8 +282,9 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
     oneditprepare: function () {
         var node = this;
 
-        function updateModelDependentUI(selectedModel) {
-            sttV2UpdateLocations(selectedModel, $("#node-input-location").val());
+        function updateModelDependentUI(selectedModel, locationHint) {
+            var currentLocation = locationHint !== undefined ? locationHint : $("#node-input-location").val();
+            sttV2UpdateLocations(selectedModel, currentLocation);
             sttV2UpdateLanguages(selectedModel, $("#node-input-languageCodes").val());
             var isChirp = selectedModel.startsWith("chirp");
             $("#node-input-enableSpeakerDiarization").closest(".form-row").toggle(!isChirp);
@@ -293,7 +294,7 @@ RED.nodes.registerType("google-cloud-speech-to-text-v2", {
             $("#node-input-languageCodes-hint").toggle(selectedModel === "chirp_2");
         }
 
-        updateModelDependentUI(node.model);
+        updateModelDependentUI(node.model, node.location);
         $("#node-input-model").on("change", function () {
             updateModelDependentUI($(this).val());
         });
