@@ -217,7 +217,7 @@ var STT_V2_LANGUAGES = {
 
 function sttV2UpdateLanguages(selectedModel, currentCodes) {
     var langList = selectedModel.startsWith("chirp") ? STT_V2_LANGUAGES.chirp : STT_V2_LANGUAGES.standard;
-    var selected = currentCodes ? currentCodes.split(",").map(function(c) { return c.trim(); }) : ["en-US"];
+    var selected = currentCodes ? currentCodes.split(",").map(function(c) { return c.trim(); }) : (selectedModel === "chirp_2" ? [] : ["en-US"]);
     var $select = $("#node-input-languageCodes-select");
     $select.empty();
     langList.forEach(function(group) {
