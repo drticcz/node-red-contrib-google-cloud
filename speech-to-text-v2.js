@@ -29,7 +29,7 @@
 module.exports = function(RED) {
     "use strict";
     const NODE_TYPE = "google-cloud-speech-to-text-v2";
-    const { v2 } = require('@google-cloud/speech');
+    const speechV2 = require('@google-cloud/speech').v2;
 
 
     function SpeechToTextV2Node(config) {
@@ -116,6 +116,7 @@ module.exports = function(RED) {
         }
 
         function durationToSeconds(duration) {
+            if (!duration) return null;
             return Number(duration.seconds) + duration.nanos / 1e9;
         }
 
@@ -240,11 +241,11 @@ module.exports = function(RED) {
             : `${location}-speech.googleapis.com`;
 
         if (credentials) {
-            speechClient = new v2.SpeechClient({ credentials, apiEndpoint });
+            speechClient = new speechV2.SpeechClient({ credentials, apiEndpoint });
         } else if (keyFilename) {
-            speechClient = new v2.SpeechClient({ keyFilename, apiEndpoint });
+            speechClient = new speechV2.SpeechClient({ keyFilename, apiEndpoint });
         } else {
-            speechClient = new v2.SpeechClient({ apiEndpoint });
+            speechClient = new speechV2.SpeechClient({ apiEndpoint });
         }
 
         node.on("input", Input);
