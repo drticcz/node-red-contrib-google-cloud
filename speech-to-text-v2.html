@@ -62,7 +62,7 @@ limitations under the License.
         <div style="display:inline-block; width:70%">
             <select id="node-input-languageCodes-select" multiple style="width:100%; height:100px;"></select>
             <div id="node-input-languageCodes-hint" style="display:none; font-size:0.85em; color:#888; margin-top:3px">
-                Leave empty to let chirp_2 auto-detect the language.
+                Select <b>auto</b> for automatic language detection, or pick one or more specific languages.
             </div>
         </div>
         <input type="hidden" id="node-input-languageCodes">
@@ -168,8 +168,8 @@ limitations under the License.
     </p>
     <p>
         <b>Language Codes</b> is a multi-select list. Hold Ctrl/Cmd to select multiple languages.
-        When using <code>chirp_2</code>, leaving the list empty enables automatic language detection.
-        For mixed-language audio (code-switching), select all languages that may appear — <code>chirp</code> and <code>chirp_2</code> detect language switches per word automatically with no extra configuration.
+        When using <code>chirp_2</code>, select <b>auto</b> (the first option) to enable automatic language detection — the model will identify the most prevalent language in the audio.
+        For known languages, select one or more specific codes instead. Note that true code-switching (mid-audio language switching) is not supported by any current V2 model; the model transcribes in the single most prevalent language.
         Additional languages can also be added per message via <code>msg.alternativeLanguageCodes</code>.
     </p>
     <p>
@@ -217,9 +217,14 @@ var STT_V2_LANGUAGES = {
 
 function sttV2UpdateLanguages(selectedModel, currentCodes) {
     var langList = selectedModel.startsWith("chirp") ? STT_V2_LANGUAGES.chirp : STT_V2_LANGUAGES.standard;
-    var selected = currentCodes ? currentCodes.split(",").map(function(c) { return c.trim(); }) : (selectedModel === "chirp_2" ? [] : ["en-US"]);
+    var selected = currentCodes ? currentCodes.split(",").map(function(c) { return c.trim(); }).filter(Boolean) : (selectedModel === "chirp_2" ? ["auto"] : ["en-US"]);
     var $select = $("#node-input-languageCodes-select");
     $select.empty();
+    if (selectedModel === "chirp_2") {
+        var $autoOpt = $("<option>").val("auto").text("auto — automatic language detection");
+        if (selected.indexOf("auto") !== -1) $autoOpt.prop("selected", true);
+        $select.append($autoOpt);
+    }
     langList.forEach(function(group) {
         var $group = $("<optgroup>").attr("label", group.group);
         group.codes.forEach(function(c) {

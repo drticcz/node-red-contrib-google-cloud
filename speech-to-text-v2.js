@@ -43,7 +43,7 @@ module.exports = function(RED) {
         const model                               = config.model || "chirp";
         const languageCodes                       = config.languageCodes
             ? config.languageCodes.split(",").map(c => c.trim()).filter(Boolean)
-            : (model === "chirp_2" ? [] : ["en-US"]);
+            : (model === "chirp_2" ? ["auto"] : ["en-US"]);
         const enableWordTimeOffsets               = config.enableWordTimeOffsets === true;
         const enableAutomaticPunctuation          = config.enableAutomaticPunctuation === true;
         const enableSpeakerDiarization            = config.enableSpeakerDiarization === true;
@@ -75,11 +75,9 @@ module.exports = function(RED) {
 
         function buildRecognitionConfig(effectiveLanguageCodes, effectiveAudioChannelCount, effectiveEnableSeparateRecognitionPerChannel, effectiveSpeechContexts) {
             const recognitionConfig = {
+                languageCodes: effectiveLanguageCodes,
                 model: model
             };
-            if (effectiveLanguageCodes.length > 0) {
-                recognitionConfig.languageCodes = effectiveLanguageCodes;
-            }
 
             if (effectiveAudioChannelCount > 1) {
                 recognitionConfig.explicitDecodingConfig = {
@@ -109,8 +107,7 @@ module.exports = function(RED) {
         }
 
         function buildConfigMask(recognitionConfig) {
-            const paths = ["model"];
-            if (recognitionConfig.languageCodes && recognitionConfig.languageCodes.length > 0) paths.push("language_codes");
+            const paths = ["model", "language_codes"];
             if (recognitionConfig.autoDecodingConfig)    paths.push("auto_decoding_config");
             if (recognitionConfig.explicitDecodingConfig) paths.push("explicit_decoding_config");
             if (recognitionConfig.features)              paths.push("features");
